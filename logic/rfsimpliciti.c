@@ -226,7 +226,9 @@ void start_simpliciti_tx_only(simpliciti_mode_t mode)
 	// Display time in line 1
 	clear_line(LINE1);  	
 	fptr_lcd_function_line1(LINE1, DISPLAY_LINE_CLEAR);
+#ifdef CONFIG_CLOCK
 	display_time(LINE1, DISPLAY_LINE_UPDATE_FULL);
+#endif
 #ifdef CONFIG_ACCEL
 	// Preset simpliciti_data with mode (key or mouse click) and clear other data bytes
 	if (mode == SIMPLICITI_ACCELERATION)
@@ -315,7 +317,9 @@ void start_simpliciti_tx_only(simpliciti_mode_t mode)
 	
  	// Clean up line 1
 	clear_line(LINE1);  	
+	#ifdef CONFIG_CLOCK
 	display_time(LINE1, DISPLAY_LINE_CLEAR);
+	#endif
 	
 	// Force full display update
 	display.flag.full_update = 1;	
@@ -558,8 +562,10 @@ WDTCTL = WDTPW + WDTHOLD;
 	// Update clock every 1/1 second
 	if (display.flag.update_time)
 	{
+		#ifdef CONFIG_CLOCK
 		display_time(LINE1, DISPLAY_LINE_UPDATE_PARTIAL);
 		display.flag.update_time = 0;
+		#endif
 
 		// Service watchdog
 		WDTCTL = WDTPW + WDTIS__512K + WDTSSEL__ACLK + WDTCNTCL;
@@ -691,9 +697,11 @@ void simpliciti_sync_decode_ap_cmd_callback(void)
 
 		case SYNC_AP_CMD_SET_WATCH:		// Set watch parameters
 										sys.flag.use_metric_units = (simpliciti_data[1] >> 7) & 0x01;
+										#ifdef CONFIG_CLOCK
 										sTime.hour 			= simpliciti_data[1] & 0x7F;
 										sTime.minute 		= simpliciti_data[2];
 										sTime.second 		= simpliciti_data[3];
+										#endif
 										sDate.year 			= (simpliciti_data[4]<<8) + simpliciti_data[5];
 										sDate.month 		= simpliciti_data[6];
 										sDate.day 			= simpliciti_data[7];
@@ -769,9 +777,16 @@ void simpliciti_sync_get_data_callback(unsigned int index)
 	switch (simpliciti_data[0])
 	{
 		case SYNC_ED_TYPE_STATUS:		// Assemble status packet
+										#ifdef CONFIG_CLOCK
 										simpliciti_data[1]  = (sys.flag.use_metric_units << 7) | (sTime.hour & 0x7F);
 										simpliciti_data[2]  = sTime.minute;
 										simpliciti_data[3]  = sTime.second;
+										#else
+										simpliciti_data[1]  = 4&0x7f;
+										simpliciti_data[2]  = 30;
+										simpliciti_data[3]  = 0;
+										#endif
+
 										simpliciti_data[4]  = sDate.year >> 8;
 										simpliciti_data[5]  = sDate.year & 0xFF;
 										simpliciti_data[6]  = sDate.month;

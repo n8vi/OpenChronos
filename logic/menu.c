@@ -167,6 +167,7 @@ u8 update_sidereal(void)
 // *************************************************************************************************
 
 // Line1 - Time
+#ifdef CONFIG_CLOCK
 const struct menu menu_L1_Time =
 {
 	FUNCTION(sx_time),			// direct function
@@ -175,6 +176,7 @@ const struct menu menu_L1_Time =
 	FUNCTION(display_time),		// display function
 	FUNCTION(update_time),		// new display data
 };
+#endif
 
 #ifdef CONFIG_SIDEREAL
 // Line1 - Sidereal Time
@@ -398,7 +400,9 @@ const struct menu menu_L1_Strength =
 // menu array
 
 const struct menu *menu_L1[]={
+	#ifdef CONFIG_CLOCK
 	&menu_L1_Time,
+	#endif
 	#ifdef CONFIG_STRENGTH
 	&menu_L1_Strength,
 	#endif

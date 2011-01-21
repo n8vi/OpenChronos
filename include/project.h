@@ -167,4 +167,9 @@ extern volatile s_message_flags message;
 	#undef CONFIG_INFOMEM
 #endif
 
+#if !defined(CONFIG_CLOCK)
+	// original alarm requires original clock
+	#undef CONFIG_ALARM
+#endif
+
 #endif /*PROJECT_H_*/

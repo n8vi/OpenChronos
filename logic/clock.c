@@ -41,6 +41,7 @@
 
 // system
 #include "project.h"
+#ifdef CONFIG_CLOCK
 
 // driver
 #include "ports.h"
@@ -417,4 +418,4 @@ void display_time(u8 line, u8 update)
 	  display_symbol(LCD_SYMB_AM, SEG_OFF);
 	}
 }
-
+#endif

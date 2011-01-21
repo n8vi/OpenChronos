@@ -259,8 +259,12 @@ void mx_date(line_t line)
 void sx_date(line_t line)
 {
 	// Rotate through 4 views
+	#ifdef CONFIG_CLOCK
 	if (++sDate.view >= 4) sDate.view = 0;
 	if(sDate.view ==3) sTime.line2ViewStyle = DISPLAY_DEFAULT_VIEW;
+	#else
+	if (++sDate.view >= 3) sDate.view = 0;
+	#endif
 }
 
 
@@ -361,7 +365,9 @@ void display_date(line_t line, update_t update)
 				display_chars(switch_seg(line, LCD_SEG_L1_3_0, LCD_SEG_L2_3_0), str, SEG_ON);
 				break;
 			default:
+				#ifdef CONFIG_CLOCK
 				display_time(line, update);
+				#endif
 				break;
 		}
 	}
