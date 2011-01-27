@@ -207,6 +207,10 @@ DATA["CONFIG_TEMP"] = {
         "name": "Temperature",
         "depends": [],
         "default": True}
+DATA["CONFIG_RTC"] = {
+	"name": "Use RTC",
+	"depends": [],
+	"default": False}
 
 
 
