@@ -168,7 +168,7 @@ DATA["CONFIG_ACCEL"] = {
         "name": "Acceleration (1232 bytes)",
         "depends": [],
         "default": True,
-        "help": "Disable acceleration applications (display and transmission). When no other application uses the acceleration sensor, it is disabled completely"
+        "help": "Acceleration applications (display and transmission). When no other application uses the acceleration sensor, it is disabled completely"
         }
 
 DATA["CONFIG_STRENGTH"] = {
@@ -212,6 +212,27 @@ DATA["CONFIG_RTC"] = {
 	"depends": [],
 	"default": False}
 
+
+###IMPLEMENTED BY LeanChronos. gventosa 09.10.2010
+DATA["CONFIG_USEPPT"] = {
+        "name": "Use PPT",
+        "depends": [],
+        "default": True}
+
+DATA["CONFIG_USE_SYNC_TOSET_TIME"] = {
+	"name": "Sync is the only way to set clocks data/time",
+	"depends": [],
+	"default": False}
+
+DATA["CONFIG_USE_DISCRET_RFBSL"] = {
+	"name": "RFBSL is hidden behind battery",
+	"depends": [],
+	"default": False}
+
+DATA["CONFIG_USE_GPS"] = {
+	"name": "GPS Functions enabled (doorlock)",
+	"depends": [],
+	"default": False}
 
 
 HEADER = """
