@@ -6,65 +6,59 @@
  * local/human to tell the user about it.  Time is stored in the RTC
  * as UTC/human.  It is stored in human format because we cannot get
  * useful 1/min or 1/hour interrupts out of the RTC in counter mode.
+ * It is stored in UTC because the RTC does not understand that some
+ * minutes may have 60 seconds, thus can't represent some TAI times.
+ * We compensate for this in the 1/minute interrupt handler.
  */
 
 #include "project.h"
 #ifndef RTC_H
 #define RTC_H
 
-#define machine_date u32;
+#define machine_date u32
 /* yes, unsigned; posix compliance is not a goal */
 
 struct _human_date
 {
   u16 year;
-  u8 month;
+  u16 yday;
+  u8 mon;
   u8 mday;
   u8 wday;
   u8 hour; 
-  u8 minute;
-  u8 second;
-} human_date;
+  u8 min;
+  u8 sec;
+};
 
+#define human_date struct _human_date
 
-extern human_date *get_now_human_utc();
-extern void set_now_human_utc(human_date *hd);
-
-extern human_date *get_now_human_local();
-extern human_date *get_now_human_tai();
-extern human_date *get_now_machine_local();
-extern human_date *get_now_machine_utc();
-extern human_date *get_now_machine_tai();
-extern void set_now_human_local(human_date *hd);
-extern void set_now_human_tai(human_date *hd);
-extern void set_now_machine_local(machine_date md);
-extern void set_now_machine_utc(machine_date md);
-extern void set_now_machine_tai(machine_date md);
+extern human_date *get_now_human_utc_date();
+extern void set_now_human_utc_date(human_date *hd);
 
 extern machine_date human_to_machine_date(human_date *hd);
 extern human_date *machine_to_human_date(machine_date md);
-local_to_tai_date
-tai_to_local_date
-local_to_utc_date
-utc_to_local_date
-utc_to_tai_date
-tai_to_utc_date
+
+extern machine_date local_to_tai_date(machine_date ld);
+extern machine_date tai_to_local_date(machine_date td);
+extern machine_date local_to_utc_date(machine_date ld);
+extern machine_date utc_to_local_date(machine_date ud);
+extern u32 get_leapseconds_utc(machine_date ud);
+extern u32 get_leapseconds_tai(machine_date td);
+
+#define utc_to_tai_date(ud) ( ud + get_leapseconds_utc(ud) )
+#define tai_to_utc_date(td) ( ud + get_leapseconds_tai(td) )
 
 
-void setRTC(u16 year, u8 month, u8 mday, u8 hour, u8 minute, u8 second)
-{
-  RTCCTL1 = 0x60; // RTCMODE + RTCHOLD;
-  RTCSEC = second;
-  RTCMIN = minute;
-  RTCHOUR = hour;
-  RTCDAY = mday;
-  RTCMON = month;
-  RTCYEARH = year / 0x100;
-  RTCYEARL = year % 0x100;
-  RTCCTL1 &= 0xb0; // ~RTCHOLD;
-}
+#define get_now_human_local_date        ( machine_to_human_date(utc_to_local_date(human_to_machine_date(get_now_human_utc_date(  )))) ) 
+#define get_now_human_tai_date          ( machine_to_human_date(utc_to_tai_date  (human_to_machine_date(get_now_human_utc_date(  )))) ) 
+#define get_now_machine_local_date      (                      (utc_to_local_date(human_to_machine_date(get_now_human_utc_date(  )))) ) 
+#define get_now_machine_tai_date        (                      (utc_to_tai_date  (human_to_machine_date(get_now_human_utc_date(  )))) ) 
+#define get_now_machine_utc_date        (                      (                 (human_to_machine_date(get_now_human_utc_date(  )))) ) 
 
-void getRTC(u16 *year, 
-
+#define set_now_human_local_date(hd)    ( set_now_human_utc_date(machine_to_human_date(local_to_utc_date(human_to_machine_date(hd)))) )
+#define set_now_human_tai_date(hd)      ( set_now_human_utc_date(machine_to_human_date(  tai_to_utc_date(human_to_machine_date(hd)))) )
+#define set_now_machine_local_date(md)  ( set_now_human_utc_date(machine_to_human_date(local_to_utc_date(                     (md)))) )
+#define set_now_machine_tai_date(md)    ( set_now_human_utc_date(machine_to_human_date(  tai_to_utc_date(                     (md)))) )
+#define set_now_machine_utc_date(md)    ( set_now_human_utc_date(machine_to_human_date(                 (                     (md)))) )
 
 #endif /* RTC_H */
