@@ -11,16 +11,61 @@
  * We compensate for this in the 1/minute interrupt handler.
  */
 
-// note to self: fill in wday please!
-
-// omfg IT'S ALREADY 1026 BYTES long!
-
 // Include section
 
 // system
+#include <stdlib.h>
 #include "project.h"
 #ifdef CONFIG_RTC
 #include "rtc.h"
+
+static machine_date leapsecs_utc[] = { /* this will only be a hardcoded array 
+  0,          10,  // jan 1  1970       * until I figure out the right way to 
+  78753600,   11,  // jun 30 1972       * update it.
+  94651200,   12,  // dec 31 1972       */
+  126187200,  13,  // dec 31 1972
+  157723200,  14,  // dec 31 1974
+  189259200,  15,  // dec 31 1975
+  220881600,  16,  // dec 31 1976
+  252417600,  17,  // dec 31 1977
+  283953600,  18,  // dec 31 1978
+  315489600,  19,  // dec 31 1979
+  331214400,  20,  // jun 30 1980
+  394286400,  21,  // jun 30 1982
+  425822400,  22,  // jun 30 1983
+  488980800,  23,  // jun 30 1985
+  567950400,  24,  // dec 31 1987
+  631108800,  25,  // dec 31 1989
+  662644800,  26,  // dec 31 1990
+  709905600,  27,  // jun 30 1992
+  741441600,  28,  // jun 30 1993
+  772977600,  29,  // jun 30 1994
+  504878400,  30,  // dec 31 1995
+  867672000,  31,  // jun 30 1997
+  915105600,  32,  // dec 31 1998
+  1136030400, 33,  // dec 31 2005
+  1230724800, 34   // dec 31 2008
+};
+
+static machine_date *leapsecs_tai;
+
+void init_rtc(void)
+{
+  static human_date hd; /* statics initialized to zeros */
+  int i;
+  leapsecs_tai = (machine_date *)malloc(sizeof(leapsecs_utc)/2);
+
+  for (i=0; i<(sizeof(leapsecs_utc)); i+=2) {
+    leapsecs_tai[i] = leapsecs_utc[i]+leapsecs_utc[i+1];
+    }
+
+  /* init things that can't be zero */
+  hd.mon = 1;
+  hd.mday = 1;
+  hd.wday = 4;
+
+  write_rtc(&hd);
+}
 
 human_date *read_rtc(void)
 {
@@ -135,14 +180,24 @@ human_date *machine_to_human_date(machine_date md)
 
 extern u32 get_leapseconds_utc(machine_date ud)
 {
-  /* to be implemented */
-  return 0;
+  u32 ret, i;
+  for (i=0; i<sizeof(leapsecs_utc); i+=2) {
+    if (leapsecs_utc[i] < ud)
+      return ret;
+    ret = leapsecs_utc[i+1];
+    }
+  return ret;
 }
 
 extern u32 get_leapseconds_tai(machine_date td)
 {
-  /* to be implemented */
-  return 0;
+  u32 ret, i;
+  for (i=0; i<sizeof(leapsecs_tai); i++) {
+    if (leapsecs_tai[i] < td)
+      return ret;
+    ret = leapsecs_utc[i*2+1];
+    }
+  return ret;
 }
 
 extern u32 get_offset_local(machine_date lt)
