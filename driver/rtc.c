@@ -1,6 +1,15 @@
-/* rtc service routines */
-
-// note to self: DO SOMETHING with yday!
+/* OpenChronos date/time routines - Brad J. Tarratt, N8VI 2011.01.23
+ *
+ * Here we deal with two representations of time, human and machine,
+ * and three timescales:  TAI, UTC, local.  You want TAI/machine for
+ * calculating the number of seconds between two times.  You'll want
+ * local/human to tell the user about it.  Time is stored in the RTC
+ * as UTC/human.  It is stored in human format because we cannot get
+ * useful 1/min or 1/hour interrupts out of the RTC in counter mode.
+ * It is stored in UTC because the RTC does not understand that some
+ * minutes may have 61 seconds, thus can't represent some TAI times.
+ * We compensate for this in the 1/minute interrupt handler.
+ */
 
 // note to self: fill in wday please!
 
@@ -13,22 +22,7 @@
 #ifdef CONFIG_RTC
 #include "rtc.h"
 
-/***************************************************************/
-
-/*
-struct _human_date
-{
-  u16 year;
-  u8 mon;
-  u8 mday;
-  u8 wday;
-  u8 hour; 
-  u8 minute;
-  u8 second;
-} human_date;
-*/
-
-human_date *get_now_human_utc_date(void)
+human_date *read_rtc(void)
 {
   static human_date hd;
 
@@ -41,7 +35,7 @@ human_date *get_now_human_utc_date(void)
   hd.sec = RTCSEC;
 }
 
-void set_now_human_utc_date(human_date *hd)
+void write_rtc(human_date *hd)
 {
   RTCCTL1 = 0x60; // RTCMODE + RTCHOLD;
   RTCYEARH = hd->year / 0x100;
@@ -98,6 +92,8 @@ human_date *machine_to_human_date(machine_date md)
   static human_date ret;
 
   epochdays = md / 86400;
+  ret.wday = (epochdays + 4) %7;
+
   dsecs = md % 86400;
 
   ret.hour = dsecs / 3600;
@@ -137,20 +133,28 @@ human_date *machine_to_human_date(machine_date md)
   return &ret;
 }
 
-machine_date local_to_utc_date(machine_date ld)
+extern u32 get_leapseconds_utc(machine_date ud)
 {
+  /* to be implemented */
+  return 0;
 }
 
-machine_date utc_to_local_date(machine_date ud)
+extern u32 get_leapseconds_tai(machine_date td)
 {
+  /* to be implemented */
+  return 0;
 }
 
-u32 get_leapseconds_utc(machine_date ud)
+extern u32 get_offset_local(machine_date lt)
 {
+  /* to be implemented */
+  return 0;
 }
 
-u32 get_leapseconds_tai(machine_date td)
+extern u32 get_offset_utc(machine_date ut)
 {
+  /* to be implemented */
+  return 0;
 }
 
 #endif /* CONFIG_RTC */
