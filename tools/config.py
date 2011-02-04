@@ -5,14 +5,10 @@ import urwid
 import urwid.raw_display
 import sys
 
-
 import re, sys, random
 from sorteddict import SortedDict
 
 from datetime import datetime, timedelta
-from pytz import timezone
-import pytz
-
 
 # {0x79, 0x56, 0x34, 0x12}
 def rand_hw():
@@ -22,6 +18,39 @@ def rand_hw():
     #res.insert(0, random.randint(1, 254))
     res.sort(reverse=True)
     return "{" + ",".join([hex(x) for x in res]) + "}"
+
+# Here's a modified binary search next-dst-change discovery algorithm
+# to set the defaults for next DST changes
+
+def nextdstswitch(ustart):
+	start = time.localtime(ustart)
+	dir = -1
+	ucur = ustart
+
+	for i in range (3):
+		ucur = ucur + 8388608
+		cur = time.localtime(ucur)
+		if cur.tm_isdst != start.tm_isdst:
+			break
+
+	previsdst = cur.tm_isdst
+
+	for i in range (22, -1, -1):
+		jump = 2 ** i
+		ucur = ucur + (jump*dir)
+		cur = time.localtime(ucur)
+		if cur.tm_isdst != previsdst:
+			dir = -dir
+		previsdst = cur.tm_isdst
+
+	if ucur % 2 == 1:
+		if previsdst == start.tm_isdst:
+			ucur += 1
+		else:
+			ucur -= 1
+
+	return ucur
+
 
 DATA = SortedDict()
 

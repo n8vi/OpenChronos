@@ -1,20 +1,23 @@
 
 This will be a real document real soon now.
 
-Here's a basic idea of the rtc code I'm working on from some 
-comments I made in irc:
+Here's the basic paradigm of the currently in-progress 
+rtc/date conversion code:
 
-I'm writing rtc read/write routines plus a bunch of date/time 
-conversion code.  My plan is that everything could run off the
-rtc and then the watch could LPM3 for whole minutes at a time 
-to save power.  The eggtimer, the stopwatch, the clock, and the
-alarm could all be managed by the RTC by keeping track of when
-they started (or, if eggtimer is stopped, how much time's left)
-and the next event that needs to fire (alarm goes off, eggtimer
-ends countdown) could be managed by the rtc's alarm capability
-and then I'd use the 1/minute interrupt from the rtc to update
-things (or 1/sec if you're looking at seconds on something ... 
-do you really need to waste power on hundredths?)
+My plan is that everything could run off the rtc and then the watch 
+could LPM3 for whole minutes at a time to save power.  The eggtimer, 
+the stopwatch, the clock, and the alarm could all be managed by the 
+RTC by keeping track of when they started (or, if eggtimer is stopped, 
+how much time's left) and the next event that needs to fire (alarm 
+goes off, eggtimer ends countdown) could be managed by the rtc's alarm 
+capability and then I'd use the 1/minute interrupt from the rtc to 
+update things (or 1/sec if you're looking at seconds on something).
+For things that require hundredths of a second updates, power-sacrificing
+convenience functions will be provided.
+
+Additionally there will be alarm chaining, giving you the ability
+to just call a function to schedule something to happen at a
+certain time.
 
 As I discovered, github user "gibbons" was also working on some
 rtc code, but had concentrated more on implementing interrupt
