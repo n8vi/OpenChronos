@@ -195,7 +195,7 @@ extern u32 get_leapseconds_utc(machine_date *ud)
   u32 ret, i;
   ret = 0;
   for (i=0; i<sizeof(leapsecs_utc); i+=2) {
-    if (leapsecs_utc[i] < ud)
+    if (leapsecs_utc[i] < ud->epochsecs)
       return ret;
     ret = leapsecs_utc[i+1];
     }
@@ -207,7 +207,7 @@ extern u32 get_leapseconds_tai(machine_date *td)
   u32 ret, i;
   ret = 0;
   for (i=0; i<sizeof(leapsecs_tai); i++) {
-    if (leapsecs_tai[i] < td)
+    if (leapsecs_tai[i] < td->epochsecs)
       return ret;
     ret = leapsecs_utc[i*2+1];
     }
@@ -215,25 +215,20 @@ extern u32 get_leapseconds_tai(machine_date *td)
 }
 
 /*
-  relevant defines:
-  CONFIG_RTC
-  NOSAVE_CUR_OFS
-  NOSAVE_RTCNEXTSW
-  NOSAVE_NEXT_OFS
-*/
-
-
 extern u32 get_offset_local(machine_date *lt)
 {
-  /* to be implemented */
+  // not sure if this makes sense to implement
   return 0;
 }
+*/
 
 extern u32 get_offset_utc(machine_date *ut)
 {
-  /* to be implemented */
-//  if (ut 
-  return 0;
+  if (ut->epochsecs > NOSAVE_NEXT_SWITCH) {
+    return NOSAVE_NEXT_OFFSET;
+  } else {
+    return NOSAVE_CURRENT_OFFSET;
+    }
 }
 
 #endif /* CONFIG_RTC */

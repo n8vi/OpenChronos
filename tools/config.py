@@ -243,7 +243,7 @@ DATA["CONFIG_TEMP"] = {
         "default": True}
 
 DATA["CONFIG_RTC"] = {
- 	"name": "Use RTC (1810 bytes, and it doesn't even do anything yet)",
+ 	"name": "Use RTC (1874 bytes, and it doesn't even do anything yet)",
  	"depends": [],
  	"default": False}
  
@@ -260,20 +260,20 @@ else:
 	udst = 0
 	tz1 = tz2 = time.timezone / 60
 
-DATA["NOSAVE_CUR_OFS"] = {
+DATA["NOSAVE_CURRENT_OFFSET"] = {
 	"name": "   + RTC: Current UTC Offset",
 	"depends": [],
 	"type": "text",
 	"default": '%d' % tz1,
 }
 
-DATA["NOSAVE_RTCNEXTSW"] = {
+DATA["NOSAVE_NEXT_SWITCH"] = {
 	"name": "   + RTC: Next DST Switch",
 	"type": "text",
 	"default": "%d" % udst
 }
 
-DATA["NOSAVE_NEXT_OFS"] = {
+DATA["NOSAVE_NEXT_OFFSET"] = {
 	"name": "   + RTC: Next UTC Offset",
 	"depends": [],
 	"type": "text",
