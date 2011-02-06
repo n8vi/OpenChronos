@@ -15,7 +15,13 @@
 #ifndef RTC_H
 #define RTC_H
 
-#define machine_date u32
+struct _machine_date 
+{
+  u32 epochsecs;
+  u8 isleapsec;
+};
+
+#define machine_date struct _machine_date;
 /* yes, unsigned; posix compliance is not a goal */
 
 struct _human_date

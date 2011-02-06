@@ -19,10 +19,10 @@
 #ifdef CONFIG_RTC
 #include "rtc.h"
 
-static machine_date leapsecs_utc[] = { /* this will only be a hardcoded array 
-  0,          10,  // jan 1  1970       * until I figure out the right way to 
-  78753600,   11,  // jun 30 1972       * update it.
-  94651200,   12,  // dec 31 1972       */
+static u32 leapsecs_utc[] = {       /* this will only be a hardcoded array 
+  0,          10,  // jan 1  1970    * until I figure out the right way to 
+  78753600,   11,  // jun 30 1972    * update it.
+  94651200,   12,  // dec 31 1972    */
   126187200,  13,  // dec 31 1972
   157723200,  14,  // dec 31 1974
   189259200,  15,  // dec 31 1975
@@ -47,13 +47,13 @@ static machine_date leapsecs_utc[] = { /* this will only be a hardcoded array
   1230724800, 34   // dec 31 2008
 };
 
-static machine_date *leapsecs_tai;
+static u32 *leapsecs_tai;
 
 void init_rtc(void)
 {
   static human_date hd; /* statics initialized to zeros */
   int i;
-  leapsecs_tai = (machine_date *)malloc(sizeof(leapsecs_utc)/2);
+  leapsecs_tai = (u32 *)malloc(sizeof(leapsecs_utc)/2);
 
   for (i=0; i<(sizeof(leapsecs_utc)); i+=2) {
     leapsecs_tai[i] = leapsecs_utc[i]+leapsecs_utc[i+1];
@@ -125,7 +125,8 @@ machine_date human_to_machine_date(human_date *hd)
 
   epochdays = 365 * (hd->year - 1970) + e + yday - 1;
 
-  result = 3600*hd->hour + 60*hd->min + hd->sec + (epochdays * 86400);
+  result.epochsecs = 3600*hd->hour + 60*hd->min + hd->sec + (epochdays * 86400);
+  result.isleapsec = 0;
 
   return result;
 }
@@ -136,10 +137,10 @@ human_date *machine_to_human_date(machine_date md)
   u8 mdays[] = {31,28,31,30,31,30,31,31,30,31,30,31};
   static human_date ret;
 
-  epochdays = md / 86400;
+  epochdays = md.epochsecs / 86400;
   ret.wday = (epochdays + 4) %7;
 
-  dsecs = md % 86400;
+  dsecs = md.epochsecs % 86400;
 
   ret.hour = dsecs / 3600;
   ret.min = (dsecs / 60) % 60;
@@ -175,12 +176,16 @@ human_date *machine_to_human_date(machine_date md)
     epochdays -= mdays[m];
     }
 
+  if (md.isleapsec)
+    ret.sec++;
+
   return &ret;
 }
 
 extern u32 get_leapseconds_utc(machine_date ud)
 {
   u32 ret, i;
+  ret = 0;
   for (i=0; i<sizeof(leapsecs_utc); i+=2) {
     if (leapsecs_utc[i] < ud)
       return ret;
@@ -192,6 +197,7 @@ extern u32 get_leapseconds_utc(machine_date ud)
 extern u32 get_leapseconds_tai(machine_date td)
 {
   u32 ret, i;
+  ret = 0;
   for (i=0; i<sizeof(leapsecs_tai); i++) {
     if (leapsecs_tai[i] < td)
       return ret;

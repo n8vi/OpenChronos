@@ -4,6 +4,7 @@
 import urwid
 import urwid.raw_display
 import sys
+import time
 
 import re, sys, random
 from sorteddict import SortedDict
@@ -51,7 +52,6 @@ def nextdstswitch(ustart):
 
 	return ucur
 
-
 DATA = SortedDict()
 
 DATA["CONFIG_FREQUENCY"] = {
@@ -94,8 +94,6 @@ DATA["THIS_DEVICE_ADDRESS"] = {
         "ifndef": True,
         "help": "Default Radio Hardware Address to use on the device",
 }
-
-	
 
 
 DATA["USE_LCD_CHARGE_PUMP"] = {
@@ -243,10 +241,44 @@ DATA["CONFIG_TEMP"] = {
         "name": "Temperature",
         "depends": [],
         "default": True}
+
 DATA["CONFIG_RTC"] = {
-	"name": "Use RTC (1060 bytes, and it doesn't even do anything yet)",
+ 	"name": "Use RTC (1060 bytes, and it doesn't even do anything yet)",
+ 	"depends": [],
+ 	"default": False}
+ 
+if time.daylight:
+	now = time.localtime()
+	unow = time.mktime(now)
+	udst = nextdstswitch(unow)
+	tz1 = tz2 = time.timezone / 60
+	if now.tm_isdst:
+		tz1 = time.altzone / 60
+	else:
+		tz2 = time.altzone / 60
+else:
+	udst = 0
+	tz1 = tz2 = time.timezone / 60
+
+DATA["NOSAVE_CUR_OFS"] = {
+	"name": "   + RTC: Current UTC Offset",
 	"depends": [],
-	"default": False}
+	"type": "text",
+	"default": '%d' % tz1,
+}
+
+DATA["NOSAVE_RTCNEXTSW"] = {
+	"name": "   + RTC: Next DST Switch",
+	"type": "text",
+	"default": "%d" % udst
+}
+
+DATA["NOSAVE_NEXT_OFS"] = {
+	"name": "   + RTC: Next UTC Offset",
+	"depends": [],
+	"type": "text",
+	"default": '%d' % tz2,
+}
 
 
 ###IMPLEMENTED BY LeanChronos. gventosa 09.10.2010
@@ -473,9 +505,11 @@ class OpenChronosApp(object):
             return
         match = re.compile('^[\t ]*#[\t ]*define[\t ]+([a-zA-Z0-9_]+)[\t ]*(.*)$')
         match2 = re.compile('^// ([a-zA-Z0-9_]+) is not set$')
+        match3 = re.compile('^[\t ]*#[\t ]*define[\t ]+(NOSAVE_[a-zA-Z0-9_]+)[\t ]*(.*)$')
         for line in fp:
             m = match.search(line)
-            if m:
+            m3 = match3.search(line)
+            if m and not m3:
                 m = m.groups()
                 if not m[0] in DATA:
                     continue
