@@ -11,6 +11,14 @@
  * We compensate for this in the 1/minute interrupt handler.
  */
 
+/*
+  relevant defines:
+  CONFIG_RTC
+  NOSAVE_CUR_OFS
+  NOSAVE_RTCNEXTSW
+  NOSAVE_NEXT_OFS
+*/
+
 #include "project.h"
 #ifndef RTC_H
 #define RTC_H
@@ -20,9 +28,6 @@ struct _machine_date
   u32 epochsecs;
   u8 isleapsec;
 };
-
-#define machine_date struct _machine_date;
-/* yes, unsigned; posix compliance is not a goal */
 
 struct _human_date
 {
@@ -37,17 +42,18 @@ struct _human_date
 };
 
 #define human_date struct _human_date
+#define machine_date struct _machine_date
 
 /* don't call these directly, use the macros below */
 extern human_date *read_rtc();
 extern void write_rtc(human_date *hd);
-extern u32 get_leapseconds_utc(machine_date ud);
-extern u32 get_leapseconds_tai(machine_date td);
-extern u32 get_tz_offset_local(machine_date lt);
-extern u32 get_tz_offset_utc(machine_date ut);
+extern u32 get_leapseconds_utc(machine_date *ud);
+extern u32 get_leapseconds_tai(machine_date *td);
+extern u32 get_tz_offset_local(machine_date *lt);
+extern u32 get_tz_offset_utc(machine_date *ut);
 
-extern machine_date human_to_machine_date(human_date *hd);
-extern human_date *machine_to_human_date(machine_date md);
+extern machine_date *human_to_machine_date(human_date *hd);
+extern human_date *machine_to_human_date(machine_date *md);
 
 #define utc_to_tai_machine_date(ud)   ( ud + get_leapseconds_utc(ud) )
 #define tai_to_utc_machine_date(td)   ( td + get_leapseconds_tai(td) )

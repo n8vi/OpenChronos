@@ -19,6 +19,14 @@
 #ifdef CONFIG_RTC
 #include "rtc.h"
 
+/*
+  relevant defines:
+  CONFIG_RTC
+  NOSAVE_CUR_OFS
+  NOSAVE_RTCNEXTSW
+  NOSAVE_NEXT_OFS
+*/
+
 static u32 leapsecs_utc[] = {       /* this will only be a hardcoded array 
   0,          10,  // jan 1  1970    * until I figure out the right way to 
   78753600,   11,  // jun 30 1972    * update it.
@@ -96,7 +104,7 @@ void write_rtc(human_date *hd)
   RTCCTL1 &= 0xb0; // ~RTCHOLD;
 }
 
-machine_date human_to_machine_date(human_date *hd)
+machine_date *human_to_machine_date(human_date *hd)
 {
   u32 yday,m,c,q,cq,e,epochdays;
 
@@ -128,19 +136,19 @@ machine_date human_to_machine_date(human_date *hd)
   result.epochsecs = 3600*hd->hour + 60*hd->min + hd->sec + (epochdays * 86400);
   result.isleapsec = 0;
 
-  return result;
+  return &result;
 }
 
-human_date *machine_to_human_date(machine_date md)
+human_date *machine_to_human_date(machine_date *md)
 {
   u32 dsecs, y,m,epochdays;
   u8 mdays[] = {31,28,31,30,31,30,31,31,30,31,30,31};
   static human_date ret;
 
-  epochdays = md.epochsecs / 86400;
+  epochdays = md->epochsecs / 86400;
   ret.wday = (epochdays + 4) %7;
 
-  dsecs = md.epochsecs % 86400;
+  dsecs = md->epochsecs % 86400;
 
   ret.hour = dsecs / 3600;
   ret.min = (dsecs / 60) % 60;
@@ -176,13 +184,13 @@ human_date *machine_to_human_date(machine_date md)
     epochdays -= mdays[m];
     }
 
-  if (md.isleapsec)
+  if (md->isleapsec)
     ret.sec++;
 
   return &ret;
 }
 
-extern u32 get_leapseconds_utc(machine_date ud)
+extern u32 get_leapseconds_utc(machine_date *ud)
 {
   u32 ret, i;
   ret = 0;
@@ -194,7 +202,7 @@ extern u32 get_leapseconds_utc(machine_date ud)
   return ret;
 }
 
-extern u32 get_leapseconds_tai(machine_date td)
+extern u32 get_leapseconds_tai(machine_date *td)
 {
   u32 ret, i;
   ret = 0;
@@ -206,15 +214,25 @@ extern u32 get_leapseconds_tai(machine_date td)
   return ret;
 }
 
-extern u32 get_offset_local(machine_date lt)
+/*
+  relevant defines:
+  CONFIG_RTC
+  NOSAVE_CUR_OFS
+  NOSAVE_RTCNEXTSW
+  NOSAVE_NEXT_OFS
+*/
+
+
+extern u32 get_offset_local(machine_date *lt)
 {
   /* to be implemented */
   return 0;
 }
 
-extern u32 get_offset_utc(machine_date ut)
+extern u32 get_offset_utc(machine_date *ut)
 {
   /* to be implemented */
+//  if (ut 
   return 0;
 }
 
