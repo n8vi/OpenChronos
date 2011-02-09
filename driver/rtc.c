@@ -4,11 +4,7 @@
  * and three timescales:  TAI, UTC, local.  You want TAI/machine for
  * calculating the number of seconds between two times.  You'll want
  * local/human to tell the user about it.  Time is stored in the RTC
- * as UTC/human.  It is stored in human format because we cannot get
- * useful 1/min or 1/hour interrupts out of the RTC in counter mode.
- * It is stored in UTC because the RTC does not understand that some
- * minutes may have 61 seconds, thus can't represent some TAI times.
- * We compensate for this in the 1/minute interrupt handler.
+ * as TAI/machine.
  */
 
 // Include section
