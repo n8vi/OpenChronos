@@ -3,7 +3,7 @@
  * Here we deal with two representations of time, human and machine,
  * and three timescales:  TAI, UTC, local.  You want TAI/machine for
  * calculating the number of seconds between two times.  You'll want
- * local/human to tell the user about it.  Time is stored in the RTC
+ * local/human to tell the user the time.  Time is stored in the RTC
  * as TAI/machine.
  */
 

@@ -260,26 +260,46 @@ else:
 	udst = 0
 	tz1 = tz2 = time.timezone / 60
 
-DATA["NOSAVE_CURRENT_OFFSET"] = {
-	"name": "   + RTC: Current UTC Offset",
+
+DATA["NOSAVE_CURRENT_DST_OFFSET"] = {
+	"name": "   + RTC: Current DST Offset",
 	"depends": [],
 	"type": "text",
 	"default": '%d' % tz1,
 }
 
-DATA["NOSAVE_NEXT_SWITCH"] = {
+DATA["NOSAVE_NEXT_DST_SWITCH"] = {
 	"name": "   + RTC: Next DST Switch",
 	"type": "text",
 	"default": "%d" % udst
 }
 
-DATA["NOSAVE_NEXT_OFFSET"] = {
-	"name": "   + RTC: Next UTC Offset",
+DATA["NOSAVE_NEXT_DST_OFFSET"] = {
+	"name": "   + RTC: Next DST Offset",
 	"depends": [],
 	"type": "text",
 	"default": '%d' % tz2,
 }
 
+DATA["NOSAVE_CURRENT_LS_OFFSET"] = {
+	"name": "   + RTC: Current Leap Second Offset",
+	"depends": [],
+	"type": "text",
+	"default": "34",
+}
+
+DATA["NOSAVE_NEXT_LS_SWITCH"] = {
+	"name": "   + RTC: Next Leap Second Switch",
+	"type": "text",
+	"default": "0"
+}
+
+DATA["NOSAVE_NEXT_LS_OFFSET"] = {
+	"name": "   + RTC: Next Leap Second Offset",
+	"depends": [],
+	"type": "text",
+	"default": "34",
+}
 
 ###IMPLEMENTED BY LeanChronos. gventosa 09.10.2010
 DATA["CONFIG_USEPPT"] = {
