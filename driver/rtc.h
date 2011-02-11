@@ -70,4 +70,7 @@ extern cal_date *int_to_cal_date(int_date *id);
 #define set_now_tai_int_date(id)         ( write_rtc(                     (               (id))) )
 #define set_now_utc_int_date(id)         ( write_rtc(utc_to_tai_int_date  (               (id))) )
 
+#define 24_to_12hr(hour)  (((hour+11)%12)+1)
+#define 24_to_ampm(hour)  (hour > 11)
+
 #endif /* RTC_H */
