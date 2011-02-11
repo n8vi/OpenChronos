@@ -18,86 +18,40 @@
 /*
   relevant defines:
   CONFIG_RTC
-  NOSAVE_CUR_OFS
-  NOSAVE_RTCNEXTSW
-  NOSAVE_NEXT_OFS
+  NOSAVE_CURRENT_DST_OFFSET
+  NOSAVE_NEXT_DST_SWITCH
+  NOSAVE_NEXT_DST_OFFSET
+  NOSAVE_NEXT_LS_OFFSET
+  NOSAVE_NEXT_LS_SWITCH
+  NOSAVE_CURRENT_LS_OFFSET
 */
 
-static u32 leapsecs_utc[] = {       /* this will only be a hardcoded array 
-  0,          10,  // jan 1  1970    * until I figure out the right way to 
-  78753600,   11,  // jun 30 1972    * update it.
-  94651200,   12,  // dec 31 1972    */
-  126187200,  13,  // dec 31 1972
-  157723200,  14,  // dec 31 1974
-  189259200,  15,  // dec 31 1975
-  220881600,  16,  // dec 31 1976
-  252417600,  17,  // dec 31 1977
-  283953600,  18,  // dec 31 1978
-  315489600,  19,  // dec 31 1979
-  331214400,  20,  // jun 30 1980
-  394286400,  21,  // jun 30 1982
-  425822400,  22,  // jun 30 1983
-  488980800,  23,  // jun 30 1985
-  567950400,  24,  // dec 31 1987
-  631108800,  25,  // dec 31 1989
-  662644800,  26,  // dec 31 1990
-  709905600,  27,  // jun 30 1992
-  741441600,  28,  // jun 30 1993
-  772977600,  29,  // jun 30 1994
-  504878400,  30,  // dec 31 1995
-  867672000,  31,  // jun 30 1997
-  915105600,  32,  // dec 31 1998
-  1136030400, 33,  // dec 31 2005
-  1230724800, 34   // dec 31 2008
-};
-
-static u32 *leapsecs_tai;
-
-void init_rtc(void)
+machine_date *read_rtc(void)
 {
-  static human_date hd; /* statics initialized to zeros */
-  int i;
-  leapsecs_tai = (u32 *)malloc(sizeof(leapsecs_utc)/2);
+  static machine_date ret;
+  u32 i1, i2, i3;
 
-  for (i=0; i<(sizeof(leapsecs_utc)); i+=2) {
-    leapsecs_tai[i] = leapsecs_utc[i]+leapsecs_utc[i+1];
-    }
+  i1 = (RTCNT12*0x10000) + RTCNT34;
+  i2 = (RTCNT12*0x10000) + RTCNT34;
+  i3 = (RTCNT12*0x10000) + RTCNT34;
 
-  /* init things that can't be zero */
-  hd.mon = 1;
-  hd.mday = 1;
-  hd.wday = 4;
+  if (i1 == i2) 
+    ret.epochsecs = i1;
+  else
+    ret.epochsecs = i3;
 
-  write_rtc(&hd);
+  ret.isleapsec = 0;
+
+  return &ret;
+
 }
 
-human_date *read_rtc(void)
+void write_rtc(machine_date *md)
 {
-  static human_date hd;
-
-  hd.year = RTCYEARH * 0x100 + RTCYEARL;
-  hd.mon = RTCMON;
-  hd.mday = RTCDAY;
-  hd.wday = RTCDOW;
-  hd.hour = RTCHOUR;
-  hd.min = RTCMIN;
-  hd.sec = RTCSEC;
-}
-
-void write_rtc(human_date *hd)
-{
-  RTCCTL1 = 0x60; // RTCMODE + RTCHOLD;
-  RTCYEARH = hd->year / 0x100;
-  RTCYEARL = hd->year % 0x100;
-  RTCMON = hd->mon;
-  if (hd->mday)
-    RTCDAY = hd->mday;
-  if (hd->wday)
-    RTCDOW = hd->wday;
-  RTCHOUR = hd->hour;
-  RTCMIN = hd->min;
-  RTCSEC = hd->sec;
-  RTCCTL1 &= 0xb0; // ~RTCHOLD;
+  RTCCTL1 = 0x40; // RTCMODE + RTCHOLD;
+  RTCNT12 = md->epochsecs >> 16;
+  RTCNT34 = md->epochsecs % 0x10000;
+  RTCCTL1 &= 0xbf; // ~RTCHOLD;
 }
 
 machine_date *human_to_machine_date(human_date *hd)
@@ -184,47 +138,6 @@ human_date *machine_to_human_date(machine_date *md)
     ret.sec++;
 
   return &ret;
-}
-
-extern u32 get_leapseconds_utc(machine_date *ud)
-{
-  u32 ret, i;
-  ret = 0;
-  for (i=0; i<sizeof(leapsecs_utc); i+=2) {
-    if (leapsecs_utc[i] < ud->epochsecs)
-      return ret;
-    ret = leapsecs_utc[i+1];
-    }
-  return ret;
-}
-
-extern u32 get_leapseconds_tai(machine_date *td)
-{
-  u32 ret, i;
-  ret = 0;
-  for (i=0; i<sizeof(leapsecs_tai); i++) {
-    if (leapsecs_tai[i] < td->epochsecs)
-      return ret;
-    ret = leapsecs_utc[i*2+1];
-    }
-  return ret;
-}
-
-/*
-extern u32 get_offset_local(machine_date *lt)
-{
-  // not sure if this makes sense to implement
-  return 0;
-}
-*/
-
-extern u32 get_offset_utc(machine_date *ut)
-{
-  if (ut->epochsecs > NOSAVE_NEXT_SWITCH) {
-    return NOSAVE_NEXT_OFFSET;
-  } else {
-    return NOSAVE_CURRENT_OFFSET;
-    }
 }
 
 #endif /* CONFIG_RTC */

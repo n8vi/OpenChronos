@@ -243,7 +243,7 @@ DATA["CONFIG_TEMP"] = {
         "default": True}
 
 DATA["CONFIG_RTC"] = {
- 	"name": "Use RTC (1874 bytes, and it doesn't even do anything yet)",
+ 	"name": "Use RTC (1070 bytes)",
  	"depends": [],
  	"default": False}
  
