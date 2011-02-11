@@ -1,10 +1,10 @@
 /* OpenChronos date/time routines - Brad J. Tarratt, N8VI 2011.01.23
  *
- * Here we deal with two representations of time, human and machine,
- * and three timescales:  TAI, UTC, local.  You want TAI/machine for
+ * Here we deal with two representations of time, cal and int,
+ * and three timescales:  TAI, UTC, local.  You want TAI/int for
  * calculating the number of seconds between two times.  You'll want
- * local/human to tell the user the time.  Time is stored in the RTC
- * as TAI/machine.
+ * local/cal to tell the user the time.  Time is stored in the RTC
+ * as TAI/int.
  */
 
 // Include section
@@ -26,9 +26,9 @@
   NOSAVE_CURRENT_LS_OFFSET
 */
 
-machine_date *read_rtc(void)
+int_date *read_rtc(void)
 {
-  static machine_date ret;
+  static int_date ret;
   u32 i1, i2, i3;
 
   i1 = (RTCNT12*0x10000) + RTCNT34;
@@ -46,7 +46,7 @@ machine_date *read_rtc(void)
 
 }
 
-void write_rtc(machine_date *md)
+void write_rtc(int_date *md)
 {
   RTCCTL1 = 0x40; // RTCMODE + RTCHOLD;
   RTCNT12 = md->epochsecs >> 16;
@@ -54,13 +54,13 @@ void write_rtc(machine_date *md)
   RTCCTL1 &= 0xbf; // ~RTCHOLD;
 }
 
-machine_date *human_to_machine_date(human_date *hd)
+int_date *cal_to_int_date(cal_date *hd)
 {
   u32 yday,m,c,q,cq,e,epochdays;
 
   u8 mdays[] = {31,28,31,30,31,30,31,31,30,31,30,31};
 
-  static machine_date result;
+  static int_date result;
 
   yday = 0;
 
@@ -89,11 +89,11 @@ machine_date *human_to_machine_date(human_date *hd)
   return &result;
 }
 
-human_date *machine_to_human_date(machine_date *md)
+cal_date *int_to_cal_date(int_date *md)
 {
   u32 dsecs, y,m,epochdays;
   u8 mdays[] = {31,28,31,30,31,30,31,31,30,31,30,31};
-  static human_date ret;
+  static cal_date ret;
 
   epochdays = md->epochsecs / 86400;
   ret.wday = (epochdays + 4) %7;
